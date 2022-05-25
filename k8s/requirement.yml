@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: requirement-deployment
+  labels:
+    app: requirement
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: requirement
+  template:
+    metadata:
+      labels:
+        app: requirement
+    spec:
+      containers:
+        - name: requirement
+          image: supungamage/requirement:latest
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: orphanage-configmap
+                  key: SPRING_PROFILES_ACTIVE
+            - name: SPRING_ZIPKIN_BASEURL
+              valueFrom:
+                configMapKeyRef:
+                  name: orphanage-configmap
+                  key: SPRING_ZIPKIN_BASEURL
+            - name: SPRING_CONFIG_IMPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: orphanage-configmap
+                  key: SPRING_CONFIG_IMPORT
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              valueFrom:
+                configMapKeyRef:
+                  name: orphanage-configmap
+                  key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: requirement-service
+spec:
+  selector:
+    app: requirement
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 8082
+      targetPort: 8082
